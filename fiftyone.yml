@@ -3,7 +3,7 @@ description: Use the Hiera Model from Facebook/Meta as a feature extractor
 version: 1.0.0
 fiftyone:
   version: "*"
-url: https://github.com/voxel51/fiftyone-plugins/tree/main/plugins/operator-examples
+url: https://github.com/harpreetsahota204/hiera-embeddings-plugin/
 license: Apache 2.0
 operators:
   - compute_hiera_embeddings

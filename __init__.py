@@ -37,7 +37,7 @@ class HieraEmbeddings(foo.Operator):
             name="compute_hiera_embeddings",  # required
 
             # The display name of the operator
-            label="Compute embeddings with Hiera models",  # required
+            label="Hiera embeddings",  # required
 
             # A description for the operator
             description="Compute embeddings using Hiera Models from Facebook/Meta",
@@ -55,7 +55,7 @@ class HieraEmbeddings(foo.Operator):
         """
         inputs = types.Object()
 
-        model_dropdown = types.Dropdown(label="Choose the AIMv2 embedding model you want to use:")
+        model_dropdown = types.Dropdown(label="Choose the Hiera embedding model you want to use:")
 
         for arch in HIERA_ARCHS:
             model_dropdown.add_choice(arch, label=arch)
@@ -159,7 +159,7 @@ class HieraEmbeddings(foo.Operator):
             model_name,
             emb_field,
             embedding_types, 
-            delegate=False
+            delegate=delegate
             )
 
 def register(p):

@@ -36,7 +36,7 @@ def get_device():
 
 class HieraEmbeddingModel(Model):
     """
-    AIMv2EmbeddingModel is a flexible class for extracting embeddings using various vision models.
+    HieraEmbeddingModel is a flexible class for extracting embeddings using various vision models.
 
     Attributes:
         model_name (str): Name of the pretrained model to use
