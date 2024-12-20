@@ -1,5 +1,4 @@
 import os
-import base64
 
 from fiftyone.core.utils import add_sys_path
 import fiftyone.operators as foo
@@ -40,7 +39,7 @@ class HieraEmbeddings(foo.Operator):
             label="Hiera embeddings",  # required
 
             # A description for the operator
-            description="Compute embeddings using Hiera Models from Facebook/Meta",
+            description="Compute embeddings using a Hiera Model",
 
             icon="/assets/icons8-meta.svg",
 
