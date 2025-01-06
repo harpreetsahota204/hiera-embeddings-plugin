@@ -8,7 +8,7 @@ This plugin allows you to compute embeddings using [Facebook's Hiera](https://gi
 
 #### Supported Models
 
-This plugin supports all currently released versions of the [Hiera collection]():
+This plugin supports all currently released versions of the [Hiera Image Models collection](https://github.com/facebookresearch/hiera):
 
 - `facebook/hiera-tiny-224-hf`
 - `facebook/hiera-small-224-hf`
