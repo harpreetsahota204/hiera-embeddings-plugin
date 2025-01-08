@@ -21,7 +21,11 @@ def hiera_activator():
     return find_spec("transformers") is not None
 
 def get_device():
-    """Helper function to determine the best available device."""
+    """Helper function to determine the best available device.
+    
+    Returns:
+        str: Device identifier ('cuda', 'mps', or 'cpu')
+    """
     if torch.cuda.is_available():
         device = "cuda"
         print(f"Using CUDA device: {torch.cuda.get_device_name(0)}")
@@ -35,15 +39,22 @@ def get_device():
 
 
 class HieraEmbeddingModel(Model):
-    """
-    HieraEmbeddingModel is a flexible class for extracting embeddings using various vision models.
+    """A model for extracting embeddings from images using Hiera vision models.
+
+    This class supports extraction of CLS token embeddings or mean pooled embeddings
+    from various sizes of Hiera models.
+
+    Args:
+        model_name (str): Name of the pretrained Hiera model to use
+        embedding_types (str): Type of embedding to extract ('cls' or 'mean')
 
     Attributes:
-        model_name (str): Name of the pretrained model to use
-        embedding_types (List[str]): Types of embeddings to extract ('cls', 'mean', or both)
         processor (AutoImageProcessor): The processor for preparing inputs
         model (HieraModel): The pretrained vision model
         device (str): The device (CPU/GPU) where the model will run
+
+    Raises:
+        ValueError: If embedding_types is not 'cls' or 'mean'
     """
 
     def __init__(self, model_name, embedding_types):
@@ -73,16 +84,14 @@ class HieraEmbeddingModel(Model):
         return "image"
 
     def extract_embeddings(self, last_hidden_state: torch.Tensor) -> np.ndarray:
-        """
-        Extracts specified type of embedding from the model's output.
+        """Extract embeddings from the model's output tensor.
 
         Args:
-            last_hidden_state (torch.Tensor): The model's last hidden state
+            last_hidden_state (torch.Tensor): Output tensor of shape (batch_size, sequence_length, hidden_size)
 
         Returns:
-            np.ndarray: The extracted embedding array (cls or mean based on initialization)
+            np.ndarray: Embedding vector of shape (hidden_size,)
         """
-
         if self.embedding_types == "cls":
             cls_embedding = last_hidden_state[0, 0].cpu().numpy()
             return cls_embedding
@@ -91,16 +100,14 @@ class HieraEmbeddingModel(Model):
             mean_embedding = last_hidden_state[0].mean(dim=0).cpu().numpy()
             return mean_embedding
 
-
     def _predict(self, image: Image.Image) -> np.ndarray:
-        """
-        Performs embedding extraction on a single image.
+        """Extract embeddings from a single image.
 
         Args:
-            image (PIL.Image.Image): The input image
+            image (PIL.Image.Image): Input image to process
 
         Returns:
-            np.ndarray: Requested embeddings
+            np.ndarray: Embedding vector of shape (hidden_size,)
         """
         inputs = self.processor(images=image, return_tensors="pt")
         inputs = inputs.to(self.device)
@@ -111,38 +118,44 @@ class HieraEmbeddingModel(Model):
 
         return self.extract_embeddings(last_hidden_state)
 
-    def predict(self, args: np.ndarray) -> Dict[str, np.ndarray]:
-        """
-        Predicts embeddings for the given image.
+    def predict(self, args: np.ndarray) -> np.ndarray:
+        """Extract embeddings from an image array.
 
         Args:
-            args (np.ndarray): The input image as a numpy array
+            args (np.ndarray): Input image as a numpy array of shape (height, width, channels)
 
         Returns:
-            np.ndarray: Requested embeddings
+            np.ndarray: Embedding vector of shape (hidden_size,)
         """
         image = Image.fromarray(args)
         predictions = self._predict(image)
         return predictions
 
-    def _predict_all(self, images: List[Image.Image]) -> List[np.ndarray]:
-        """
-        Performs prediction on a list of images.
+    def predict_all(self, images: List[Image.Image]) -> List[np.ndarray]:
+        """Extract embeddings from multiple images.
 
         Args:
-            images (List[PIL.Image.Image]): List of PIL images
+            images (List[PIL.Image.Image]): List of input images to process
 
         Returns:
-            List[np.ndarray]: List of embedding arrays for each image
+            List[np.ndarray]: List of embedding vectors, each of shape (hidden_size,)
         """
-        return [self._predict(image) for image in images]
+        return [self.predict(image) for image in images]
 
 def run_embeddings_model(
-    dataset,
-    model_name,
-    emb_field,
-    embedding_types
-    ):
+    dataset: fo.Dataset,
+    model_name: str,
+    emb_field: str,
+    embedding_types: str
+) -> None:
+    """Apply the Hiera embedding model to a FiftyOne dataset.
+
+    Args:
+        dataset (fo.Dataset): The FiftyOne dataset to process
+        model_name (str): Name of the pretrained Hiera model to use
+        emb_field (str): Name of the field to store embeddings in
+        embedding_types (str): Type of embedding to extract ('cls' or 'mean')
+    """
 
     model = HieraEmbeddingModel(model_name, embedding_types)
 
